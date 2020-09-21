@@ -116,8 +116,10 @@ And then, please try [Getting Started](#getting-started) again.
   - **We DON'T write much codes in this layer.**
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/19743841/93103573-c5861b00-f6e7-11ea-9d22-c514f1242178.jpg">
-  <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html">Clean Architecture</a>
+  <img src="https://user-images.githubusercontent.com/19743841/93830264-afa9c480-fcaa-11ea-9589-7c5308c291f4.jpg">
+</p>
+<p align="center">
+  <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html">The Clean Architecture</a>
 </p>
 
 ## How to cross the border of those layers
@@ -144,7 +146,7 @@ Please follow next four tasks:
         └── parameter.go // 1. Interface
 ```
 
-Here, I pick up example of Repository.
+Here, I pick up example of Repository whose import statement is omitted.
 
 ### Repository
 
@@ -183,7 +185,10 @@ type Parameter struct{}
 func (r Parameter) Get() domain.Parameter {
 	db := postgresql.Connection()
 	var param model.Parameter
-	db.First(&param, 1)
+	result := db.First(&param, 1)
+	if result.Error != nil {
+		panic(result.Error)
+	}
 	return domain.Parameter{
 		Funds: param.Funds,
 		Btc:   param.Btc,
@@ -199,6 +204,8 @@ func (r Parameter) Save(p domain.Parameter) {
 4. Dependency Injection at Controller of Adapter Layer:
 
 ```go
+package adapter
+
 func (ctrl Controller) parameter(c *gin.Context) {
 	repository := repository.Parameter{}
 	parameter := usecase.Parameter(repository) // Dependency Injection
@@ -207,6 +214,23 @@ func (ctrl Controller) parameter(c *gin.Context) {
 ```
 
 Implementation of Application Service is also the same.
+
+## Naming Convention
+
+### Interface
+
+- Add prefix `I` like `IParameter`.
+  - NOTICE: If you can distinguish interface from implementation, any naming convention will be acceptable.
+
+### File
+
+- File names can be duplicated.
+
+### Package
+
+- For package, please check following posts:
+  - [Package names](https://blog.golang.org/package-names)
+  - [Names](https://golang.org/doc/effective_go.html#names)
 
 ## With PostgreSQL
 
@@ -222,7 +246,7 @@ Then, let's check it out:
 open http://0.0.0.0:8080/parameter
 ```
 
-### Docker image
+### Docker Image
 
 The image you pulled from GitHub Container Registry is built from simple Dockerfile and init.sql.
 
