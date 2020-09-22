@@ -63,34 +63,34 @@ And then, please try [Getting Started](#getting-started) again.
 
 ## Package Structure
 
-```
+```bash
 .
 ├── cmd
 │   └── app
 │       ├── adapter
-│       │   ├── controller.go
-│       │   ├── postgresql
+│       │   ├── controller.go        # Controller
+│       │   ├── postgresql           # Database
 │       │   │   ├── conn.go
-│       │   │   └── model
+│       │   │   └── model            # Database Model
 │       │   │       └── parameter.go
-│       │   ├── repository
+│       │   ├── repository           # Repository Implementation
 │       │   │   └── parameter.go
-│       │   ├── service
+│       │   ├── service              # Application Service Implementation
 │       │   │   └── bitbank.go
-│       │   └── view
+│       │   └── view                 # Templates
 │       │       └── index.tmpl
 │       ├── application
-│       │   ├── service
+│       │   ├── service              # Application Service Interface
 │       │   │   └── exchange.go
-│       │   └── usecase
+│       │   └── usecase              # Usecase
 │       │       ├── ohlc.go
 │       │       ├── parameter.go
 │       │       └── ticker.go
 │       └── domain
-│           ├── parameter.go
-│           ├── repository
+│           ├── parameter.go         # Entity
+│           ├── repository           # Repository Interface
 │           │   └── parameter.go
-│           └── valueobject
+│           └── valueobject          # ValueObject
 │               ├── candlestick.go
 │               ├── pair.go
 │               ├── ticker.go
@@ -124,12 +124,23 @@ And then, please try [Getting Started](#getting-started) again.
 
 ## How to cross the border of those layers
 
-Please follow next four tasks:
+In Clean Architecture, there is one main rule:
+
+- Anything in the inner layer CANNOT know what exists in the outer layers.
+  - which means **the direction of dependency is inward**.
+
+In other words, **Dependency Injection** is required to follow this rule.
+
+Therefore, please follow next four tasks:
 
 1. Define Interface
 1. Take Argument as Interface and Call Functions of It
 1. Implement It
 1. Inject Dependency
+
+Here, I pick up example of Repository whose import statements are omitted.
+
+### Repository
 
 ```
 .
@@ -145,10 +156,6 @@ Please follow next four tasks:
     └── repository
         └── parameter.go // 1. Interface
 ```
-
-Here, I pick up example of Repository whose import statement is omitted.
-
-### Repository
 
 1. Interface at Domain Layer:
 
@@ -228,7 +235,7 @@ Implementation of Application Service is also the same.
 
 ### Package
 
-- For package, please check following posts:
+- For package name, please check following posts:
   - [Package names](https://blog.golang.org/package-names)
   - [Names](https://golang.org/doc/effective_go.html#names)
 
