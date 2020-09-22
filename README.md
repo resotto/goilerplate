@@ -59,7 +59,7 @@ open http://0.0.0.0:8080
 `go get` GitHub repository via HTTPS by default so you might fail `go get`:
 
 ```zsh
-➜  ~ go get github.com/resotto/goilerplate
+➜  ~ go get -u github.com/resotto/goilerplate
 # cd .; git clone -- https://github.com/resotto/goilerplate /Users/resotto/go/src/github.com/resotto/goilerplate
 Cloning into '/Users/resotto/go/src/github.com/resotto/goilerplate'...
 fatal: could not read Username for 'https://github.com': terminal prompts disabled
@@ -283,9 +283,9 @@ import (
 
 func TestParameter(t *testing.T) {
 	tests := []struct {
-		name                   string
-		funds, btc             int
-		expectfunds, expectbtc int
+		name                       string
+		funds, btc                 int
+		expectedfunds, expectedbtc int
 	}{
 		{"more funds than btc", 1000, 0, 1000, 0},
 		{"same amount", 100, 100, 100, 100},
@@ -300,15 +300,16 @@ func TestParameter(t *testing.T) {
 				Funds: tt.funds,
 				Btc:   tt.btc,
 			}
-			if parameter.Funds != tt.expectfunds {
-				t.Errorf("got %q, want %q", parameter.Funds, tt.expectfunds)
+			if parameter.Funds != tt.expectedfunds {
+				t.Errorf("got %q, want %q", parameter.Funds, tt.expectedfunds)
 			}
-			if parameter.Btc != tt.expectbtc {
-				t.Errorf("got %q, want %q", parameter.Btc, tt.expectbtc)
+			if parameter.Btc != tt.expectedbtc {
+				t.Errorf("got %q, want %q", parameter.Btc, tt.expectedbtc)
 			}
 		})
 	}
 }
+
 ```
 
 ### Usecase
