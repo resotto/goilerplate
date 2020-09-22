@@ -17,7 +17,7 @@
 Why Goilerplate?
 
 - You can focus more on your application logic.
-- Rocket start guide of Go, Domain-Driven Design, Clean Architecture, Gin, and GORM.
+- Rocket start guide of Go, Domain-Driven Design, [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html), [Gin](https://github.com/gin-gonic/gin), and [GORM](https://github.com/go-gorm/gorm).
 
 Note
 
@@ -27,13 +27,14 @@ Note
 Requirements
 
 - [Go](https://golang.org/doc/install)
+- [Docker](https://docs.docker.com/get-docker/)
 
 ---
 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-- [Can't go get goilerplate via SSH ?](#can't-go-get-goilerplate-via-ssh)
+- [go get Goilerplate via SSH](#go-get-goilerplate-via-ssh)
 - [Endpoints](#endpoints)
 - [Package Structure](#package-structure)
 - [How to cross the border of those layers](#how-to-cross-the-border-of-those-layers)
@@ -46,15 +47,25 @@ Requirements
 ## Getting Started
 
 ```zsh
-go get github.com/resotto/goilerplate
+go get -u gorm.io/gorm                          # please go get gorm first
+go get -u github.com/resotto/goilerplate        # might take few minutes
 cd ${GOPATH}/src/github.com/resotto/goilerplate
-go run main.go # please run main.go from root directory
+go run main.go                                  # from root directory
 open http://0.0.0.0:8080
 ```
 
-## Can't `go get` Goilerplate via SSH ?
+## `go get` Goilerplate via SSH
 
-`go get` GitHub repository via HTTPS by default.  
+`go get` GitHub repository via HTTPS by default so you might fail `go get`:
+
+```zsh
+➜  ~ go get github.com/resotto/goilerplate
+# cd .; git clone -- https://github.com/resotto/goilerplate /Users/resotto/go/src/github.com/resotto/goilerplate
+Cloning into '/Users/resotto/go/src/github.com/resotto/goilerplate'...
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+package github.com/resotto/goilerplate: exit status 128
+```
+
 If you `go get` GitHub repository via SSH, please run following command:
 
 ```zsh
