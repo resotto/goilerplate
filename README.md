@@ -14,16 +14,34 @@
 
 ---
 
-Note:
+Why Goilerplate?
 
-- Default application code is trivial because you will implement cool logic.
-- Public API of bitbank, which is bitcoin exchange located in Tokyo, is used for some endpoints by default.
+- You can focus more on your application logic.
+- Rocket start guide of Go, Domain-Driven Design, Clean Architecture, Gin, and GORM.
 
-Requirements:
+Note
+
+- Default application/test code is trivial because you will write cool logic.
+- [Public API of bitbank](https://github.com/bitbankinc/bitbank-api-docs/blob/master/public-api.md#general-endpoints), which is bitcoin exchange located in Tokyo, is used for some endpoints by default.
+
+Requirements
 
 - [Go](https://golang.org/doc/install)
 
 ---
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Can't go get goilerplate via SSH ?](#can't-go-get-goilerplate-via-ssh)
+- [Endpoints](#endpoints)
+- [Package Structure](#package-structure)
+- [How to cross the border of those layers](#how-to-cross-the-border-of-those-layers)
+- [Testing](#testing)
+- [Naming Convention](#naming-convention)
+- [With PostgreSQL](#with-postgresql)
+- [Feedbacks](#feedbacks)
+- [License](#license)
 
 ## Getting Started
 
@@ -34,7 +52,7 @@ go run main.go # please run main.go from root directory
 open http://0.0.0.0:8080
 ```
 
-## Can't `go get` this package via SSH ?
+## Can't `go get` Goilerplate via SSH ?
 
 `go get` GitHub repository via HTTPS by default.  
 If you `go get` GitHub repository via SSH, please run following command:
@@ -87,14 +105,14 @@ And then, please try [Getting Started](#getting-started) again.
 │       │       ├── parameter.go
 │       │       └── ticker.go
 │       └── domain
-│           ├── parameter.go         # Entity
-│           ├── repository           # Repository Interface
-│           │   └── parameter.go
-│           └── valueobject          # ValueObject
-│               ├── candlestick.go
-│               ├── pair.go
-│               ├── ticker.go
-│               └── timeunit.go
+│           ├── parameter.go         # Entity
+│           ├── repository           # Repository Interface
+│           │   └── parameter.go
+│           └── valueobject          # ValueObject
+│               ├── candlestick.go
+│               ├── pair.go
+│               ├── ticker.go
+│               └── timeunit.go
 └── main.go
 ```
 
@@ -142,19 +160,19 @@ Here, I pick up example of Repository whose import statements are omitted.
 
 ### Repository
 
-```
+```bash
 .
 ├── adapter
-│   ├── controller.go    // 4. Dependency Injection
+│   ├── controller.go    # 4. Dependency Injection
 │   └── repository
-│       └── parameter.go // 3. Implementation
+│       └── parameter.go # 3. Implementation
 ├── application
 │   └── usecase
-│       └── parameter.go // 2. Interface Function Call
+│       └── parameter.go # 2. Interface Function Call
 └── domain
     ├── parameter.go
     └── repository
-        └── parameter.go // 1. Interface
+        └── parameter.go # 1. Interface
 ```
 
 1. Interface at Domain Layer:
@@ -222,16 +240,196 @@ func (ctrl Controller) parameter(c *gin.Context) {
 
 Implementation of Application Service is also the same.
 
+## Testing
+
+There are two rules:
+
+- Name of the package where test code included is `xxx_test`.
+- Place mocks on `testdata` package.
+
+### Entity
+
+Please write test in the same directory as the entity.
+
+```bash
+.
+└── cmd
+    └── app
+        └── domain
+            ├── parameter.go         # Target Entity
+            └── parameter_test.go    # Test
+```
+
+```go
+// parameter_test.go
+package domain_test
+
+import (
+	"testing"
+
+	"github.com/resotto/goilerplate/cmd/app/domain"
+)
+
+func TestParameter(t *testing.T) {
+	tests := []struct {
+		name                   string
+		funds, btc             int
+		expectfunds, expectbtc int
+	}{
+		{"more funds than btc", 1000, 0, 1000, 0},
+		{"same amount", 100, 100, 100, 100},
+		{"much more funds than btc", 100000, 20, 100000, 20},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			parameter := domain.Parameter{
+				Funds: tt.funds,
+				Btc:   tt.btc,
+			}
+			if parameter.Funds != tt.expectfunds {
+				t.Errorf("got %q, want %q", parameter.Funds, tt.expectfunds)
+			}
+			if parameter.Btc != tt.expectbtc {
+				t.Errorf("got %q, want %q", parameter.Btc, tt.expectbtc)
+			}
+		})
+	}
+}
+```
+
+### Usecase
+
+Please prepare mock on `testdata` package and write test in the same directory as the usecase.
+
+```bash
+.
+└── cmd
+    └── app
+        ├── application
+        │   ├── service
+        │   │   └── exchange.go      # Application Service Interface
+        │   └── usecase
+        │       ├── ticker.go        # Target Usecase
+        │       └── ticker_test.go   # Test
+        └── testdata
+            └── exchange_mock.go     # Mock of Application Service Interface
+```
+
+```go
+// exchange_mock.go
+package testdata
+
+import "github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+
+// MExchange is mock of service.IExchange
+type MExchange struct{}
+
+// Ticker is mock implementation of service.IExchange.Ticker()
+func (e MExchange) Ticker(p valueobject.Pair) valueobject.Ticker {
+	return valueobject.Ticker{
+		Sell:      "1000",
+		Buy:       "1000",
+		High:      "2000",
+		Low:       "500",
+		Last:      "1200",
+		Vol:       "20",
+		Timestamp: "1600769562",
+	}
+}
+
+// Ohlc is mock implementation of service.IExchange.Ohlc()
+func (e MExchange) Ohlc(p valueobject.Pair, t valueobject.Timeunit) []valueobject.CandleStick {
+	cs := make([]valueobject.CandleStick, 0)
+	return append(cs, valueobject.CandleStick{
+		Open:      "1000",
+		High:      "2000",
+		Low:       "500",
+		Close:     "1500",
+		Volume:    "30",
+		Timestamp: "1600769562",
+	})
+}
+```
+
+```go
+// ticker_test.go
+package usecase_test
+
+import (
+	"testing"
+
+	"github.com/resotto/goilerplate/cmd/app/application/usecase"
+	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/cmd/app/testdata"
+)
+
+func TestTicker(t *testing.T) {
+	tests := []struct {
+		name              string
+		pair              valueobject.Pair
+		expectedsell      string
+		expectedbuy       string
+		expectedhigh      string
+		expectedlow       string
+		expectedlast      string
+		expectedvol       string
+		expectedtimestamp string
+	}{
+		{"btcjpy", valueobject.BtcJpy, "1000", "1000", "2000", "500", "1200", "20", "1600769562"},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mexchange := testdata.MExchange{} // using Mock
+			result := usecase.Ticker(mexchange, tt.pair)
+			if result.Sell != tt.expectedsell {
+				t.Errorf("got %q, want %q", result.Sell, tt.expectedsell)
+			}
+			if result.Buy != tt.expectedbuy {
+				t.Errorf("got %q, want %q", result.Buy, tt.expectedbuy)
+			}
+			if result.High != tt.expectedhigh {
+				t.Errorf("got %q, want %q", result.High, tt.expectedhigh)
+			}
+			if result.Low != tt.expectedlow {
+				t.Errorf("got %q, want %q", result.Low, tt.expectedlow)
+			}
+			if result.Last != tt.expectedlast {
+				t.Errorf("got %q, want %q", result.Last, tt.expectedlast)
+			}
+			if result.Vol != tt.expectedvol {
+				t.Errorf("got %q, want %q", result.Vol, tt.expectedvol)
+			}
+			if result.Timestamp != tt.expectedtimestamp {
+				t.Errorf("got %q, want %q", result.Timestamp, tt.expectedtimestamp)
+			}
+		})
+	}
+}
+```
+
 ## Naming Convention
 
 ### Interface
 
-- Add prefix `I` like `IParameter`.
+- Add prefix `I` like `IExchange`.
   - NOTICE: If you can distinguish interface from implementation, any naming convention will be acceptable.
+
+### Mock
+
+- Add prefix `M` like `MExchange`.
+  - NOTICE: If you can distinguish mock from production, any naming convention will be acceptable.
 
 ### File
 
 - File names can be duplicated.
+- For test, add suffix `_test` like `parameter_test.go`.
+- For mock, add suffix `_mock` like `exchange_mock.go`.
 
 ### Package
 
