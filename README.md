@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Clean Boilerplate of Go + Domain-Driven Design + Clean Architecture + Gin + GORM.  
+  Clean Boilerplate of Go, Domain-Driven Design, Clean Architecture, Gin and GORM.  
 </p>
 
 <p align="center">
