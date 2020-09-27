@@ -24,6 +24,7 @@ func Router() *gin.Engine {
 	r.GET("/ticker", ctrl.ticker)
 	r.GET("/candlestick", ctrl.candlestick)
 	r.GET("/parameter", ctrl.parameter)
+	r.GET("/order", ctrl.order)
 	return r
 }
 
@@ -52,4 +53,10 @@ func (ctrl Controller) parameter(c *gin.Context) {
 	repository := repository.Parameter{}
 	parameter := usecase.Parameter(repository) // Dependency Injection
 	c.JSON(200, parameter)
+}
+
+func (ctrl Controller) order(c *gin.Context) {
+	repository := repository.Order{}
+	order := usecase.SaveChangedState(repository) // Dependency Injection
+	c.JSON(200, order)
 }
