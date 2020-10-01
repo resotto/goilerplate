@@ -7,8 +7,8 @@ import (
 	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
 )
 
-// SaveChangedState saves order whose state has been changed
-func SaveChangedState(o repository.IOrder) domain.Order {
+// AddNewCardAndEatCheese updates payment card and jerry's weight
+func AddNewCardAndEatCheese(o repository.IOrder) domain.Order {
 	order := o.Get()
 	newCardBrand := valueobject.VISA
 	if order.Payment.Card.Brand == valueobject.VISA {
@@ -20,6 +20,6 @@ func SaveChangedState(o repository.IOrder) domain.Order {
 	}
 	order.Person.Weight++
 	order.Payment.Card = newCard
-	o.Save(order)
+	o.Update(order)
 	return order
 }

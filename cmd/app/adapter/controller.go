@@ -57,6 +57,6 @@ func (ctrl Controller) parameter(c *gin.Context) {
 
 func (ctrl Controller) order(c *gin.Context) {
 	repository := repository.Order{}
-	order := usecase.SaveChangedState(repository) // Dependency Injection
+	order := usecase.AddNewCardAndEatCheese(repository) // Dependency Injection
 	c.JSON(200, order)
 }
