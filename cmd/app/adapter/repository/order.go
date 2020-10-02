@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql"
 	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql/model"
 	"github.com/resotto/goilerplate/cmd/app/domain"
@@ -50,10 +52,20 @@ func (o Order) Update(order domain.Order) {
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
-		tx.Exec("update persons set name = ?, weight = ? where person_id = ?", person.Name, person.Weight, person.ID)
-		tx.Exec("insert into cards values (?, ?)", card.ID, card.Brand)
-		tx.Exec("update payments set card_id = ? where order_id = ?", payment.CardID, payment.OrderID)
-		return nil
+		var err error
+		err = tx.Exec("update persons set name = ?, weight = ? where person_id = ?", person.Name, person.Weight, person.ID).Error
+		if err != nil {
+			return errors.New("rollback")
+		}
+		err = tx.Exec("insert into cards values (?, ?)", card.ID, card.Brand).Error
+		if err != nil {
+			return errors.New("rollback")
+		}
+		err = tx.Exec("update payments set card_id = ? where order_id = ?", payment.CardID, payment.OrderID).Error
+		if err != nil {
+			return errors.New("rollback")
+		}
+		return nil // commit
 	})
 	if err != nil {
 		panic(err)

@@ -22,8 +22,3 @@ func (r Parameter) Get() domain.Parameter {
 		Btc:   param.Btc,
 	}
 }
-
-// Save saves parameter
-func (r Parameter) Save(p domain.Parameter) {
-	// TODO
-}
