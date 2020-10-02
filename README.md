@@ -37,7 +37,7 @@ Requirements
 - [go get Goilerplate via SSH](#go-get-goilerplate-via-ssh)
 - [Endpoints](#endpoints)
 - [Package Structure](#package-structure)
-- [How to cross the border of those layers](#how-to-cross-the-border-of-those-layers)
+- [How to Cross the Border of Those Layers](#how-to-cross-the-border-of-those-layers)
 - [Testing](#testing)
 - [Naming Convention](#naming-convention)
 - [With PostgreSQL](#with-postgresql)
@@ -79,16 +79,17 @@ And then, please try [Getting Started](#getting-started) again.
 - With Template
   - `GET /`
     - NOTICE: Following path is from CURRENT directory, so please run Gin from root directory.
-    ```go
-    r.LoadHTMLGlob("cmd/app/adapter/view/*")
-    ```
+      ```go
+      r.LoadHTMLGlob("cmd/app/adapter/view/*")
+      ```
 - With Public API of bitbank
   - `GET /ticker`
   - `GET /candlestick`
     - NOTICE: This works from 0AM ~ 3PM (UTC) due to its API constraints.
 - With PostgreSQL
-  - `GET /parameter`
-    - [NOTICE: Please run postgres container first with this step.](#with-postgresql)
+  - [NOTICE: Please run postgres container first with this step.](#with-postgresql)
+    - `GET /parameter`
+    - `GET /order`
 
 ## Package Structure
 
@@ -97,31 +98,46 @@ And then, please try [Getting Started](#getting-started) again.
 ├── cmd
 │   └── app
 │       ├── adapter
-│       │   ├── controller.go        # Controller
-│       │   ├── postgresql           # Database
+│       │   ├── controller.go                 # Controller
+│       │   ├── postgresql                    # Database
 │       │   │   ├── conn.go
-│       │   │   └── model            # Database Model
-│       │   │       └── parameter.go
-│       │   ├── repository           # Repository Implementation
+│       │   │   └── model                     # Database Model
+│       │   │       ├── card.go
+│       │   │       ├── cardBrand.go
+│       │   │       ├── order.go
+│       │   │       ├── parameter.go
+│       │   │       ├── payment.go
+│       │   │       └── person.go
+│       │   ├── repository                    # Repository Implementation
+│       │   │   ├── order.go
 │       │   │   └── parameter.go
-│       │   ├── service              # Application Service Implementation
+│       │   ├── service                       # Application Service Implementation
 │       │   │   └── bitbank.go
-│       │   └── view                 # Templates
-│       │       └── index.tmpl
+│       │   └── view
+│       │       └── index.tmpl                # Templates
 │       ├── application
-│       │   ├── service              # Application Service Interface
+│       │   ├── service                       # Application Service Interface
 │       │   │   └── exchange.go
-│       │   └── usecase              # Usecase
+│       │   └── usecase                       # Usecase
+│       │       ├── addNewCardAndEatCheese.go
 │       │       ├── ohlc.go
 │       │       ├── parameter.go
 │       │       └── ticker.go
 │       └── domain
-│           ├── parameter.go         # Entity
-│           ├── repository           # Repository Interface
+│           ├── factory                       # Factory
+│           │   └── order.go
+│           ├── order.go                      # Entity
+│           ├── parameter.go
+│           ├── person.go
+│           ├── repository                    # Repository Interface
+│           │   ├── order.go
 │           │   └── parameter.go
-│           └── valueobject          # ValueObject
+│           └── valueobject                   # ValueObject
 │               ├── candlestick.go
+│               ├── card.go
+│               ├── cardbrand.go
 │               ├── pair.go
+│               ├── payment.go
 │               ├── ticker.go
 │               └── timeunit.go
 └── main.go
@@ -151,7 +167,7 @@ And then, please try [Getting Started](#getting-started) again.
   <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html">The Clean Architecture</a>
 </p>
 
-## How to cross the border of those layers
+## How to Cross the Border of Those Layers
 
 In Clean Architecture, there is one main rule:
 
@@ -258,6 +274,23 @@ There are two rules:
 - Name of the package where test code included is `xxx_test`.
 - Place mocks on `testdata` package.
 
+### Test Package Structure
+
+```bash
+.
+└── cmd
+    └── app
+        ├── application
+        │   └── usecase
+        │       ├── ticker.go      # Usecase
+        │       └── ticker_test.go # Usecase Test
+        ├── domain
+        │   ├── parameter.go       # Entity
+        │   └── parameter_test.go  # Entity Test
+        └── testdata
+            └── exchange_mock.go   # Mock if needed
+```
+
 ### Entity
 
 Please write test in the same directory as the entity.
@@ -314,7 +347,7 @@ func TestParameter(t *testing.T) {
 
 ### Usecase
 
-Please prepare mock on `testdata` package and write test in the same directory as the usecase.
+Please prepare mock on `testdata` package (if needed) and write test in the same directory as the usecase.
 
 ```bash
 .
@@ -461,6 +494,7 @@ Then, let's check it out:
 
 ```bash
 open http://0.0.0.0:8080/parameter
+open http://0.0.0.0:8080/order
 ```
 
 ### Docker Image
@@ -483,6 +517,41 @@ create table parameters (
 );
 
 insert into parameters values (1, 10000, 10);
+
+create table persons (
+    person_id uuid primary key,
+    name text not null,
+    weight integer
+);
+
+create table card_brands (
+    brand text primary key
+);
+
+create table cards (
+    card_id uuid primary key,
+    brand text references card_brands(brand) on update cascade
+);
+
+create table orders (
+    order_id uuid primary key,
+    person_id uuid references persons(person_id)
+);
+
+create table payments (
+    order_id uuid primary key references orders(order_id),
+    card_id uuid references cards(card_id)
+);
+
+insert into persons values ('f3bf75a9-ea4c-4f57-9161-cfa8f96e2d0b', 'Jerry', 1);
+
+insert into card_brands values ('VISA'), ('AMEX');
+
+insert into cards values ('3224ebc0-0a6e-4e22-9ce8-c6564a1bb6a1', 'VISA');
+
+insert into orders values ('722b694c-984c-4208-bddd-796553cf83e1', 'f3bf75a9-ea4c-4f57-9161-cfa8f96e2d0b');
+
+insert into payments values ('722b694c-984c-4208-bddd-796553cf83e1', '3224ebc0-0a6e-4e22-9ce8-c6564a1bb6a1');
 ```
 
 ## Feedbacks

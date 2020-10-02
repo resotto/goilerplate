@@ -22,7 +22,7 @@ func (o Order) Get() domain.Order {
 	if result.Error != nil {
 		panic(result.Error)
 	}
-	orderFactory := factory.OrderFactory{}
+	orderFactory := factory.Order{}
 	return orderFactory.Generate(
 		order.Person.ID,
 		order.Person.Name,

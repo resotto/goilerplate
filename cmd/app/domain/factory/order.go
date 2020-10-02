@@ -5,11 +5,11 @@ import (
 	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
 )
 
-// OrderFactory is the factory of domain.Order
-type OrderFactory struct{}
+// Order is the factory of domain.Order
+type Order struct{}
 
 // Generate generates domain.Order from primitives
-func (of OrderFactory) Generate(
+func (of Order) Generate(
 	personID string,
 	name string,
 	weight int,
