@@ -42,10 +42,12 @@ func (ctrl Controller) ticker(c *gin.Context) {
 }
 
 func (ctrl Controller) candlestick(c *gin.Context) {
-	pair := valueobject.BtcJpy
-	timeunit := valueobject.OneMin
-	exchange := service.Bitbank{}
-	candlestick := usecase.Ohlc(exchange, pair, timeunit) // Dependency Injection
+	args := usecase.OhlcArgs{
+		E: service.Bitbank{}, // Dependency Injection
+		P: valueobject.BtcJpy,
+		T: valueobject.OneMin,
+	}
+	candlestick := usecase.Ohlc(args)
 	c.JSON(200, candlestick)
 }
 
