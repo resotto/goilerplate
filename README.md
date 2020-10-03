@@ -38,6 +38,7 @@ Requirements
 - [Endpoints](#endpoints)
 - [Package Structure](#package-structure)
 - [How to Cross the Border of Those Layers](#how-to-cross-the-border-of-those-layers)
+- [Dependency Injection](#dependency-injection)
 - [Testing](#testing)
 - [Naming Convention](#naming-convention)
 - [With PostgreSQL](#with-postgresql)
@@ -266,6 +267,74 @@ func (ctrl Controller) parameter(c *gin.Context) {
 ```
 
 Implementation of Application Service is also the same.
+
+## Dependency Injection
+
+In Goilerplate, manual DI is used.
+
+- NOTICE: DI tool will be acceptable.
+
+There are two ways of manual DI:
+
+- with positional arguments
+- with keyword arguments
+
+### With Positional Arguments
+
+First, define usecase with arguments of interface type.
+
+```go
+package usecase
+
+func Parameter(r repository.IParameter) domain.Parameter { // Take Argument as Interface
+	return r.Get()
+}
+```
+
+Second, initialize implementation and give it to the usecase.
+
+```go
+package adapter
+
+func (ctrl Controller) parameter(c *gin.Context) {
+	repository := repository.Parameter{}       // Initialize Implementation
+	parameter := usecase.Parameter(repository) // Inject Implementation to Usecase
+	c.JSON(200, parameter)
+}
+```
+
+### With Keyword Arguments
+
+First, define argument struct and usecase taking it.
+
+```go
+package usecase
+
+// OhlcArgs are arguments of Ohlc usecase
+type OhlcArgs struct {
+	E service.IExchange                           // Interface
+	P valueobject.Pair
+	T valueobject.Timeunit
+}
+
+func Ohlc(a OhlcArgs) []valueobject.CandleStick { // Take Argument as OhlcArgs
+	return a.E.Ohlc(a.P, a.T)
+}
+```
+
+And then, initialize the struct with keyword arguments and give it to the usecase.
+
+```go
+func (ctrl Controller) candlestick(c *gin.Context) {
+	args := usecase.OhlcArgs{         // Initialize Struct with Keyword Arguments
+		E: service.Bitbank{},         // Implementation
+		P: valueobject.BtcJpy,
+		T: valueobject.OneMin,
+	}
+	candlestick := usecase.Ohlc(args) // Give Arguments to Usecase
+	c.JSON(200, candlestick)
+}
+```
 
 ## Testing
 
