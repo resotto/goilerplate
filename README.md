@@ -312,7 +312,7 @@ package usecase
 
 // OhlcArgs are arguments of Ohlc usecase
 type OhlcArgs struct {
-	E service.IExchange                           // Interface
+	E service.IExchange                       // Interface
 	P valueobject.Pair
 	T valueobject.Timeunit
 }
@@ -327,7 +327,7 @@ And then, initialize the struct with keyword arguments and give it to the usecas
 ```go
 func (ctrl Controller) candlestick(c *gin.Context) {
 	args := usecase.OhlcArgs{         // Initialize Struct with Keyword Arguments
-		E: service.Bitbank{},         // Implementation
+		E: service.Bitbank{},     // Implementation
 		P: valueobject.BtcJpy,
 		T: valueobject.OneMin,
 	}
