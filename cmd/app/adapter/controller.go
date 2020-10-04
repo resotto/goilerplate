@@ -11,6 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	bitbank             = service.Bitbank{}
+	parameterRepository = repository.Parameter{}
+	orderRepository     = repository.Order{}
+)
+
 // Controller is a controller
 type Controller struct{}
 
@@ -36,14 +42,13 @@ func (ctrl Controller) index(c *gin.Context) {
 
 func (ctrl Controller) ticker(c *gin.Context) {
 	pair := valueobject.BtcJpy
-	exchange := service.Bitbank{}
-	ticker := usecase.Ticker(exchange, pair) // Dependency Injection
+	ticker := usecase.Ticker(bitbank, pair) // Dependency Injection
 	c.JSON(200, ticker)
 }
 
 func (ctrl Controller) candlestick(c *gin.Context) {
 	args := usecase.OhlcArgs{
-		E: service.Bitbank{}, // Dependency Injection
+		E: bitbank, // Dependency Injection
 		P: valueobject.BtcJpy,
 		T: valueobject.OneMin,
 	}
@@ -52,13 +57,11 @@ func (ctrl Controller) candlestick(c *gin.Context) {
 }
 
 func (ctrl Controller) parameter(c *gin.Context) {
-	repository := repository.Parameter{}
-	parameter := usecase.Parameter(repository) // Dependency Injection
+	parameter := usecase.Parameter(parameterRepository) // Dependency Injection
 	c.JSON(200, parameter)
 }
 
 func (ctrl Controller) order(c *gin.Context) {
-	repository := repository.Order{}
-	order := usecase.AddNewCardAndEatCheese(repository) // Dependency Injection
+	order := usecase.AddNewCardAndEatCheese(orderRepository) // Dependency Injection
 	c.JSON(200, order)
 }

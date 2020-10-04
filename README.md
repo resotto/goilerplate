@@ -336,6 +336,27 @@ func (ctrl Controller) candlestick(c *gin.Context) {
 }
 ```
 
+### Global Injecter Variable
+
+In manual DI, implementation initialization cost will be expensive.  
+So, let's use global injecter variable in order to reduce it.
+
+When you want to inject another dependency, then let's initialize it.
+
+```go
+var (
+	bitbank             = service.Bitbank{} // Injecter Variable
+	parameterRepository = repository.Parameter{}
+	orderRepository     = repository.Order{}
+)
+
+func (ctrl Controller) ticker(c *gin.Context) {
+	pair := valueobject.BtcJpy
+	ticker := usecase.Ticker(bitbank, pair) // DI by passing bitbank
+	c.JSON(200, ticker)
+}
+```
+
 ## Testing
 
 There are two rules:
@@ -564,6 +585,15 @@ Then, let's check it out:
 ```bash
 open http://0.0.0.0:8080/parameter
 open http://0.0.0.0:8080/order
+```
+
+### Building Image
+
+If you fail pulling image from GitHub Container Registry, you also can build image from Dockerfile.
+
+```bash
+docker build -t goilerplate-pg:latest .
+docker run -d -it --name pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres goilerplate-pg:latest
 ```
 
 ### Docker Image
