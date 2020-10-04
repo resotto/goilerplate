@@ -339,9 +339,7 @@ func (ctrl Controller) candlestick(c *gin.Context) {
 ### Global Injecter Variable
 
 In manual DI, implementation initialization cost will be expensive.  
-So, let's use global injecter variable in order to reduce it.
-
-When you want to inject another dependency, then let's initialize it.
+So, let's use global injecter variable in order to initialize them only once.
 
 ```go
 var (
