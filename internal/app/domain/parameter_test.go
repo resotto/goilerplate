@@ -3,7 +3,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/resotto/goilerplate/cmd/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain"
 )
 
 func TestParameter(t *testing.T) {

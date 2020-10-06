@@ -3,8 +3,8 @@ package usecase_test
 import (
 	"testing"
 
-	"github.com/resotto/goilerplate/cmd/app/application/usecase"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/internal/app/application/usecase"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 	"github.com/resotto/goilerplate/test"
 )
 

@@ -51,7 +51,7 @@ Requirements
 go get -u gorm.io/gorm                          # please go get gorm first
 go get -u github.com/resotto/goilerplate        # might take few minutes
 cd ${GOPATH}/src/github.com/resotto/goilerplate
-go run main.go                                  # from root directory
+go run cmd/app/main.go                          # from root directory
 open http://0.0.0.0:8080
 ```
 
@@ -81,7 +81,7 @@ And then, please try [Getting Started](#getting-started) again.
   - `GET /`
     - NOTICE: Following path is from CURRENT directory, so please run Gin from root directory.
       ```go
-      r.LoadHTMLGlob("cmd/app/adapter/view/*")
+      r.LoadHTMLGlob("internal/app/adapter/view/*")
       ```
 - With Public API of bitbank
   - `GET /ticker`
@@ -94,9 +94,17 @@ And then, please try [Getting Started](#getting-started) again.
 
 ## Package Structure
 
-```bash
+```zsh
 .
-├── cmd
+├── LICENSE
+├── README.md
+├── build                                     # Packaging and Continuous Integration
+│   ├── Dockerfile
+│   └── init.sql
+├── cmd                                       # Main Application
+│   └── app
+│       └── main.go
+├── internal                                  # Private Codes
 │   └── app
 │       ├── adapter
 │       │   ├── controller.go                 # Controller
@@ -114,8 +122,8 @@ And then, please try [Getting Started](#getting-started) again.
 │       │   │   └── parameter.go
 │       │   ├── service                       # Application Service Implementation
 │       │   │   └── bitbank.go
-│       │   └── view
-│       │       └── index.tmpl                # Templates
+│       │   └── view                          # Templates
+│       │       └── index.tmpl
 │       ├── application
 │       │   ├── service                       # Application Service Interface
 │       │   │   └── exchange.go
@@ -123,25 +131,28 @@ And then, please try [Getting Started](#getting-started) again.
 │       │       ├── addNewCardAndEatCheese.go
 │       │       ├── ohlc.go
 │       │       ├── parameter.go
-│       │       └── ticker.go
+│       │       ├── ticker.go
+│       │       └── ticker_test.go
 │       └── domain
-│           ├── factory                       # Factory
-│           │   └── order.go
-│           ├── order.go                      # Entity
-│           ├── parameter.go
-│           ├── person.go
-│           ├── repository                    # Repository Interface
-│           │   ├── order.go
-│           │   └── parameter.go
-│           └── valueobject                   # ValueObject
-│               ├── candlestick.go
-│               ├── card.go
-│               ├── cardbrand.go
-│               ├── pair.go
-│               ├── payment.go
-│               ├── ticker.go
-│               └── timeunit.go
-└── main.go
+│           ├── factory                       # Factory
+│           │   └── order.go
+│           ├── order.go                      # Entity
+│           ├── parameter.go
+│           ├── parameter_test.go
+│           ├── person.go
+│           ├── repository                    # Repository Interface
+│           │   ├── order.go
+│           │   └── parameter.go
+│           └── valueobject                   # ValueObject
+│               ├── candlestick.go
+│               ├── card.go
+│               ├── cardbrand.go
+│               ├── pair.go
+│               ├── payment.go
+│               ├── ticker.go
+│               └── timeunit.go
+└── test                                      # Test Data
+    └── exchange_mock.go
 ```
 
 ### ![#fffacd](https://via.placeholder.com/15/fffacd/000000?text=+) Domain Layer
@@ -188,19 +199,21 @@ Here, I pick up example of Repository whose import statements are omitted.
 
 ### Repository
 
-```bash
+```zsh
 .
-├── adapter
-│   ├── controller.go    # 4. Dependency Injection
-│   └── repository
-│       └── parameter.go # 3. Implementation
-├── application
-│   └── usecase
-│       └── parameter.go # 2. Interface Function Call
-└── domain
-    ├── parameter.go
-    └── repository
-        └── parameter.go # 1. Interface
+└── internal
+    └── app
+        ├── adapter
+        │   ├── controller.go    # 4. Dependency Injection
+        │   └── repository
+        │       └── parameter.go # 3. Implementation
+        ├── application
+        │   └── usecase
+        │       └── parameter.go # 2. Interface Function Call
+        └── domain
+            ├── parameter.go
+            └── repository
+                └── parameter.go # 1. Interface
 ```
 
 1. Interface at Domain Layer:
@@ -211,7 +224,6 @@ package repository
 // IParameter is interface of parameter repository
 type IParameter interface {
 	Get() domain.Parameter
-	Save(domain.Parameter)
 }
 ```
 
@@ -246,11 +258,6 @@ func (r Parameter) Get() domain.Parameter {
 		Funds: param.Funds,
 		Btc:   param.Btc,
 	}
-}
-
-// Save saves parameter
-func (r Parameter) Save(p domain.Parameter) {
-	// TODO
 }
 ```
 
@@ -312,7 +319,7 @@ package usecase
 
 // OhlcArgs are arguments of Ohlc usecase
 type OhlcArgs struct {
-	E service.IExchange                       // Interface
+	E service.IExchange                           // Interface
 	P valueobject.Pair
 	T valueobject.Timeunit
 }
@@ -325,13 +332,15 @@ func Ohlc(a OhlcArgs) []valueobject.CandleStick { // Take Argument as OhlcArgs
 And then, initialize the struct with keyword arguments and give it to the usecase.
 
 ```go
+package adapter
+
 func (ctrl Controller) candlestick(c *gin.Context) {
-	args := usecase.OhlcArgs{         // Initialize Struct with Keyword Arguments
-		E: service.Bitbank{},     // Implementation
+	args := usecase.OhlcArgs{                        // Initialize Struct with Keyword Arguments
+		E: service.Bitbank{},                        // Implementation
 		P: valueobject.BtcJpy,
 		T: valueobject.OneMin,
 	}
-	candlestick := usecase.Ohlc(args) // Give Arguments to Usecase
+	candlestick := usecase.Ohlc(args)                // Give Arguments to Usecase
 	c.JSON(200, candlestick)
 }
 ```
@@ -342,50 +351,70 @@ In manual DI, implementation initialization cost will be expensive.
 So, let's use global injecter variable in order to initialize them only once.
 
 ```go
+package adapter
+
 var (
-	bitbank             = service.Bitbank{} // Injecter Variable
+	bitbank             = service.Bitbank{}      // Injecter Variable
 	parameterRepository = repository.Parameter{}
 	orderRepository     = repository.Order{}
 )
 
 func (ctrl Controller) ticker(c *gin.Context) {
 	pair := valueobject.BtcJpy
-	ticker := usecase.Ticker(bitbank, pair) // DI by passing bitbank
+	ticker := usecase.Ticker(bitbank, pair)      // DI by passing bitbank
 	c.JSON(200, ticker)
 }
 ```
 
 ## Testing
 
+```zsh
+➜  goilerplate git:(master) ✗ go test ./...
+?       github.com/resotto/goilerplate/cmd/app  [no test files]
+?       github.com/resotto/goilerplate/internal/app/adapter     [no test files]
+?       github.com/resotto/goilerplate/internal/app/adapter/postgresql  [no test files]
+?       github.com/resotto/goilerplate/internal/app/adapter/postgresql/model    [no test files]
+?       github.com/resotto/goilerplate/internal/app/adapter/repository  [no test files]
+?       github.com/resotto/goilerplate/internal/app/adapter/service     [no test files]
+?       github.com/resotto/goilerplate/internal/app/application/service [no test files]
+ok      github.com/resotto/goilerplate/internal/app/application/usecase 0.599s
+ok      github.com/resotto/goilerplate/internal/app/domain      0.463s
+?       github.com/resotto/goilerplate/internal/app/domain/factory      [no test files]
+?       github.com/resotto/goilerplate/internal/app/domain/repository   [no test files]
+?       github.com/resotto/goilerplate/internal/app/domain/valueobject  [no test files]
+?       github.com/resotto/goilerplate/test     [no test files]
+
+```
+
 There are two rules:
 
 - Name of the package where test code included is `xxx_test`.
-- Place mocks on `testdata` package.
+- Place mocks on `test` package.
 
 ### Test Package Structure
 
-```bash
+```zsh
 .
-└── cmd
-    └── app
-        ├── application
-        │   └── usecase
-        │       ├── ticker.go      # Usecase
-        │       └── ticker_test.go # Usecase Test
-        ├── domain
-        │   ├── parameter.go       # Entity
-        │   └── parameter_test.go  # Entity Test
-        └── testdata
-            └── exchange_mock.go   # Mock if needed
+├── internal
+│   └── app
+│       ├── application
+│       │   └── usecase
+│       │       ├── ticker.go      # Usecase
+│       │       └── ticker_test.go # Usecase Test
+│       └── domain
+│           ├── parameter.go       # Entity
+│           └── parameter_test.go  # Entity Test
+└── test
+    └── exchange_mock.go           # Mock if needed
 ```
 
 ### Entity
 
-Please write test in the same directory as the entity.
+Please write test in the same directory as where the entity located.
 
-```bash
+```zsh
 .
-└── cmd
+└── internal
     └── app
         └── domain
             ├── parameter.go         # Target Entity
@@ -399,7 +428,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/resotto/goilerplate/cmd/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain"
 )
 
 func TestParameter(t *testing.T) {
@@ -435,27 +464,27 @@ func TestParameter(t *testing.T) {
 
 ### Usecase
 
-Please prepare mock on `testdata` package (if needed) and write test in the same directory as the usecase.
+Please prepare mock on `test` package (if needed) and write test in the same directory as the usecase.
 
-```bash
+```zsh
 .
-└── cmd
-    └── app
-        ├── application
-        │   ├── service
-        │   │   └── exchange.go      # Application Service Interface
-        │   └── usecase
-        │       ├── ticker.go        # Target Usecase
-        │       └── ticker_test.go   # Test
-        └── testdata
-            └── exchange_mock.go     # Mock of Application Service Interface
+├── internal
+│   └── app
+│       └── application
+│           ├── service
+│           │   └── exchange.go    # Application Service Interface
+│           └── usecase
+│               ├── ticker.go      # Target Usecase
+│               └── ticker_test.go # Test
+└── test
+    └── exchange_mock.go           # Mock of Application Service Interface
 ```
 
 ```go
 // exchange_mock.go
-package testdata
+package test
 
-import "github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
 // MExchange is mock of service.IExchange
 type MExchange struct{}
@@ -494,9 +523,9 @@ package usecase_test
 import (
 	"testing"
 
-	"github.com/resotto/goilerplate/cmd/app/application/usecase"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
-	"github.com/resotto/goilerplate/cmd/app/testdata"
+	"github.com/resotto/goilerplate/internal/app/application/usecase"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
+	"github.com/resotto/goilerplate/test"
 )
 
 func TestTicker(t *testing.T) {
@@ -567,20 +596,24 @@ func TestTicker(t *testing.T) {
 ### Package
 
 - For package name, please check following posts:
+
   - [Package names](https://blog.golang.org/package-names)
   - [Names](https://golang.org/doc/effective_go.html#names)
+
+- For package layout, please check:
+  - [Project Layout](https://github.com/golang-standards/project-layout)
 
 ## With PostgreSQL
 
 First, you pull docker image from GitHub Container Registry and run container with following command:
 
-```bash
+```zsh
 docker run -d -it --name pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres ghcr.io/resotto/goilerplate-pg:latest
 ```
 
 Then, let's check it out:
 
-```bash
+```zsh
 open http://0.0.0.0:8080/parameter
 open http://0.0.0.0:8080/order
 ```
@@ -589,7 +622,8 @@ open http://0.0.0.0:8080/order
 
 If you fail pulling image from GitHub Container Registry, you also can build image from Dockerfile.
 
-```bash
+```zsh
+cd build
 docker build -t goilerplate-pg:latest .
 docker run -d -it --name pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres goilerplate-pg:latest
 ```

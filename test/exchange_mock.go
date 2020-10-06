@@ -1,6 +1,6 @@
 package test
 
-import "github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
 // MExchange is mock of service.IExchange
 type MExchange struct{}
