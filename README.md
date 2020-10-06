@@ -319,7 +319,7 @@ package usecase
 
 // OhlcArgs are arguments of Ohlc usecase
 type OhlcArgs struct {
-	E service.IExchange                           // Interface
+	E service.IExchange                       // Interface
 	P valueobject.Pair
 	T valueobject.Timeunit
 }
@@ -335,12 +335,12 @@ And then, initialize the struct with keyword arguments and give it to the usecas
 package adapter
 
 func (ctrl Controller) candlestick(c *gin.Context) {
-	args := usecase.OhlcArgs{                        // Initialize Struct with Keyword Arguments
-		E: service.Bitbank{},                        // Implementation
+	args := usecase.OhlcArgs{                    // Initialize Struct with Keyword Arguments
+		E: service.Bitbank{},                // Implementation
 		P: valueobject.BtcJpy,
 		T: valueobject.OneMin,
 	}
-	candlestick := usecase.Ohlc(args)                // Give Arguments to Usecase
+	candlestick := usecase.Ohlc(args)            // Give Arguments to Usecase
 	c.JSON(200, candlestick)
 }
 ```
@@ -547,7 +547,7 @@ func TestTicker(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			mexchange := testdata.MExchange{} // using Mock
+			mexchange := testdata.MExchange{}                                           // Using Mock
 			result := usecase.Ticker(mexchange, tt.pair)
 			if result.Sell != tt.expectedsell {
 				t.Errorf("got %q, want %q", result.Sell, tt.expectedsell)
