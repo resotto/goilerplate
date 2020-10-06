@@ -1,8 +1,8 @@
 package factory
 
 import (
-	"github.com/resotto/goilerplate/cmd/app/domain"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/internal/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 )
 
 // Order is the factory of domain.Order

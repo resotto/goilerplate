@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql"
-	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql/model"
-	"github.com/resotto/goilerplate/cmd/app/domain"
+	"github.com/resotto/goilerplate/internal/app/adapter/postgresql"
+	"github.com/resotto/goilerplate/internal/app/adapter/postgresql/model"
+	"github.com/resotto/goilerplate/internal/app/domain"
 )
 
 // Parameter is the repository of domain.Parameter

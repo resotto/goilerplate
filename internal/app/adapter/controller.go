@@ -3,12 +3,11 @@ package adapter
 import (
 	"net/http"
 
-	"github.com/resotto/goilerplate/cmd/app/adapter/repository"
-	"github.com/resotto/goilerplate/cmd/app/adapter/service"
-	"github.com/resotto/goilerplate/cmd/app/application/usecase"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
-
 	"github.com/gin-gonic/gin"
+	"github.com/resotto/goilerplate/internal/app/adapter/repository"
+	"github.com/resotto/goilerplate/internal/app/adapter/service"
+	"github.com/resotto/goilerplate/internal/app/application/usecase"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 )
 
 var (
@@ -25,7 +24,7 @@ func Router() *gin.Engine {
 	r := gin.Default()
 	ctrl := Controller{}
 	// NOTICE: following path is from CURRENT directory, so please run Gin from root directory
-	r.LoadHTMLGlob("cmd/app/adapter/view/*")
+	r.LoadHTMLGlob("internal/app/adapter/view/*")
 	r.GET("/", ctrl.index)
 	r.GET("/ticker", ctrl.ticker)
 	r.GET("/candlestick", ctrl.candlestick)

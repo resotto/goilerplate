@@ -5,7 +5,7 @@ import (
 
 	"github.com/resotto/goilerplate/cmd/app/application/usecase"
 	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
-	"github.com/resotto/goilerplate/cmd/app/testdata"
+	"github.com/resotto/goilerplate/test"
 )
 
 func TestTicker(t *testing.T) {
@@ -27,7 +27,7 @@ func TestTicker(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			mexchange := testdata.MExchange{} // using Mock
+			mexchange := test.MExchange{} // using Mock
 			result := usecase.Ticker(mexchange, tt.pair)
 			if result.Sell != tt.expectedsell {
 				t.Errorf("got %q, want %q", result.Sell, tt.expectedsell)

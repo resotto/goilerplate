@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/resotto/goilerplate/cmd/app/domain"
+import "github.com/resotto/goilerplate/internal/app/domain"
 
 // IOrder is interface of order repository
 type IOrder interface {

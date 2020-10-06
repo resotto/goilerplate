@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"github.com/google/uuid"
-	"github.com/resotto/goilerplate/cmd/app/domain"
-	"github.com/resotto/goilerplate/cmd/app/domain/repository"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/internal/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain/repository"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 )
 
 // AddNewCardAndEatCheese updates payment card and jerry's weight

@@ -3,10 +3,10 @@ package repository
 import (
 	"errors"
 
-	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql"
-	"github.com/resotto/goilerplate/cmd/app/adapter/postgresql/model"
-	"github.com/resotto/goilerplate/cmd/app/domain"
-	"github.com/resotto/goilerplate/cmd/app/domain/factory"
+	"github.com/resotto/goilerplate/internal/app/adapter/postgresql"
+	"github.com/resotto/goilerplate/internal/app/adapter/postgresql/model"
+	"github.com/resotto/goilerplate/internal/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain/factory"
 	"gorm.io/gorm"
 )
 

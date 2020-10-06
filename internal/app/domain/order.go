@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
 // Order is an order which has id, payment and person info
 type Order struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/resotto/goilerplate/cmd/app/adapter"
+	"github.com/resotto/goilerplate/internal/app/adapter"
 	"github.com/spf13/viper"
 )
 

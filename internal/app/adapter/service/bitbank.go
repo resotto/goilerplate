@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 	"github.com/spf13/viper"
 )
 

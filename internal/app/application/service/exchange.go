@@ -1,6 +1,6 @@
 package service
 
-import "github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
 // IExchange is interface of bitcoin exchange
 type IExchange interface {

@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/resotto/goilerplate/cmd/app/application/service"
-	"github.com/resotto/goilerplate/cmd/app/domain/valueobject"
+	"github.com/resotto/goilerplate/internal/app/application/service"
+	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
 )
 
 // OhlcArgs are arguments of Ohlc usecase
