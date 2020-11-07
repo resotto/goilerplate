@@ -1,6 +1,9 @@
 <h1 align="center">Goilerplate</h1>
 
 <p align="center">
+  <a href="https://goreportcard.com/report/github.com/resotto/goilerplate"><img src="https://goreportcard.com/badge/github.com/resotto/goilerplate" /></a>
+  <a href="https://pkg.go.dev/github.com/resotto/goilerplate"><img src="https://pkg.go.dev/badge/github.com/resotto/goilerplate" /></a>
+  <a href="https://github.com/resotto/goilerplate/issues/1"><img src="https://img.shields.io/badge/chat-on%20issue-yellow"></a>
   <a href="https://github.com/resotto/goilerplate/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v3.0-brightgreen.svg" /></a>
 </p>
 
@@ -14,20 +17,23 @@
 
 ---
 
+What is Goilerplate?
+
+- **Good example of Go with Clean Architecture.**
+- **Rocket start guide of Go, Domain-Driven Design, [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html), [Gin](https://github.com/gin-gonic/gin), and [GORM](https://github.com/go-gorm/gorm)**.
+
+Who is the main user of Goilerplate?
+
+- All kinds of Gophers (newbie to professional).
+
 Why Goilerplate?
 
-- You can focus more on your application logic.
-- Rocket start guide of Go, Domain-Driven Design, [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html), [Gin](https://github.com/gin-gonic/gin), and [GORM](https://github.com/go-gorm/gorm).
+- **Easy-applicable boilerplate in Go.**
 
 Note
 
 - Default application/test code is trivial because you will write cool logic.
 - [Public API of bitbank](https://github.com/bitbankinc/bitbank-api-docs/blob/master/public-api.md#general-endpoints), which is bitcoin exchange located in Tokyo, is used for some endpoints by default.
-
-Requirements
-
-- [Go](https://golang.org/doc/install)
-- [Docker](https://docs.docker.com/get-docker/)
 
 ---
 
@@ -44,6 +50,7 @@ Requirements
 - [With PostgreSQL](#with-postgresql)
 - [Feedbacks](#feedbacks)
 - [License](#license)
+- [Author](#author)
 
 ## Getting Started
 
@@ -57,10 +64,10 @@ open http://0.0.0.0:8080
 
 ## `go get` Goilerplate via SSH
 
-`go get` GitHub repository via HTTPS by default so you might fail `go get`:
+`go get` fetches GitHub repository via HTTPS by default. So you might fail `go get`:
 
 ```zsh
-➜  ~ go get -u github.com/resotto/goilerplate
+~  > go get -u github.com/resotto/goilerplate
 # cd .; git clone -- https://github.com/resotto/goilerplate /Users/resotto/go/src/github.com/resotto/goilerplate
 Cloning into '/Users/resotto/go/src/github.com/resotto/goilerplate'...
 fatal: could not read Username for 'https://github.com': terminal prompts disabled
@@ -151,7 +158,7 @@ And then, please try [Getting Started](#getting-started) again.
 │               ├── payment.go
 │               ├── ticker.go
 │               └── timeunit.go
-└── test                                      # Test Data
+└── testdata                                  # Test Data
     └── exchange_mock.go
 ```
 
@@ -181,21 +188,20 @@ And then, please try [Getting Started](#getting-started) again.
 
 ## How to Cross the Border of Those Layers
 
-In Clean Architecture, there is one main rule:
+In Clean Architecture, there is [The Dependency Rule](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html#the-dependency-rule):
 
-- Anything in the inner layer CANNOT know what exists in the outer layers.
-  - which means **the direction of dependency is inward**.
+> This rule says that source code dependencies can only point inwards. Nothing in an inner circle can know anything at all about something in an outer circle.
 
 In other words, **Dependency Injection** is required to follow this rule.
 
-Therefore, please follow next four tasks:
+Therefore, please follow the next four steps:
 
 1. Define Interface
 1. Take Argument as Interface and Call Functions of It
 1. Implement It
 1. Inject Dependency
 
-Here, I pick up example of Repository whose import statements are omitted.
+Here, I pick up the example of Repository.
 
 ### Repository
 
@@ -221,6 +227,8 @@ Here, I pick up example of Repository whose import statements are omitted.
 ```go
 package repository
 
+import "github.com/resotto/goilerplate/internal/app/domain"
+
 // IParameter is interface of parameter repository
 type IParameter interface {
 	Get() domain.Parameter
@@ -231,6 +239,12 @@ type IParameter interface {
 
 ```go
 package usecase
+
+// NOTICE: This usecase DON'T depend on Adapter layer
+import (
+	"github.com/resotto/goilerplate/internal/app/domain"
+	"github.com/resotto/goilerplate/internal/app/domain/repository"
+)
 
 // Parameter is the usecase of getting parameter
 func Parameter(r repository.IParameter) domain.Parameter {
@@ -266,9 +280,19 @@ func (r Parameter) Get() domain.Parameter {
 ```go
 package adapter
 
+// NOTICE: Controller depends on INNER CIRCLE so it points inward (The Dependency Rule)
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/resotto/goilerplate/internal/app/adapter/repository"
+	"github.com/resotto/goilerplate/internal/app/application/usecase"
+)
+
+var (
+	parameterRepository = repository.Parameter{}
+)
+
 func (ctrl Controller) parameter(c *gin.Context) {
-	repository := repository.Parameter{}
-	parameter := usecase.Parameter(repository) // Dependency Injection
+	parameter := usecase.Parameter(parameterRepository) // Dependency Injection
 	c.JSON(200, parameter)
 }
 ```
@@ -277,11 +301,11 @@ Implementation of Application Service is also the same.
 
 ## Dependency Injection
 
-In Goilerplate, manual DI is used.
+**In Goilerplate, dependencies are injected manually.**
 
-- NOTICE: DI tool will be acceptable.
+- NOTICE: If other DI tool in Go doesn't become some kind of application framework, it will also be acceptable.
 
-There are two ways of manual DI:
+There are two ways of passing dependencies:
 
 - with positional arguments
 - with keyword arguments
@@ -303,9 +327,12 @@ Second, initialize implementation and give it to the usecase.
 ```go
 package adapter
 
+var (
+	parameterRepository = repository.Parameter{}        // Initialize Implementation
+)
+
 func (ctrl Controller) parameter(c *gin.Context) {
-	repository := repository.Parameter{}       // Initialize Implementation
-	parameter := usecase.Parameter(repository) // Inject Implementation to Usecase
+	parameter := usecase.Parameter(parameterRepository) // Inject Implementation to Usecase
 	c.JSON(200, parameter)
 }
 ```
@@ -334,9 +361,13 @@ And then, initialize the struct with keyword arguments and give it to the usecas
 ```go
 package adapter
 
+var (
+	bitbank             = service.Bitbank{}      // Implementation
+)
+
 func (ctrl Controller) candlestick(c *gin.Context) {
 	args := usecase.OhlcArgs{                    // Initialize Struct with Keyword Arguments
-		E: service.Bitbank{},                // Implementation
+		E: bitbank,                          // Passing the implementation
 		P: valueobject.BtcJpy,
 		T: valueobject.OneMin,
 	}
@@ -369,27 +400,24 @@ func (ctrl Controller) ticker(c *gin.Context) {
 ## Testing
 
 ```zsh
-➜  goilerplate git:(master) ✗ go test ./...
-?       github.com/resotto/goilerplate/cmd/app  [no test files]
+~/go/src/github.com/resotto/goilerplate (master) > go test ./internal/app/...
 ?       github.com/resotto/goilerplate/internal/app/adapter     [no test files]
 ?       github.com/resotto/goilerplate/internal/app/adapter/postgresql  [no test files]
 ?       github.com/resotto/goilerplate/internal/app/adapter/postgresql/model    [no test files]
 ?       github.com/resotto/goilerplate/internal/app/adapter/repository  [no test files]
 ?       github.com/resotto/goilerplate/internal/app/adapter/service     [no test files]
 ?       github.com/resotto/goilerplate/internal/app/application/service [no test files]
-ok      github.com/resotto/goilerplate/internal/app/application/usecase 0.599s
-ok      github.com/resotto/goilerplate/internal/app/domain      0.463s
+ok      github.com/resotto/goilerplate/internal/app/application/usecase 0.204s
+ok      github.com/resotto/goilerplate/internal/app/domain      0.273s
 ?       github.com/resotto/goilerplate/internal/app/domain/factory      [no test files]
 ?       github.com/resotto/goilerplate/internal/app/domain/repository   [no test files]
 ?       github.com/resotto/goilerplate/internal/app/domain/valueobject  [no test files]
-?       github.com/resotto/goilerplate/test     [no test files]
-
 ```
 
 There are two rules:
 
 - Name of the package where test code included is `xxx_test`.
-- Place mocks on `test` package.
+- Place mocks on `testdata` package.
 
 ### Test Package Structure
 
@@ -404,21 +432,21 @@ There are two rules:
 │       └── domain
 │           ├── parameter.go       # Entity
 │           └── parameter_test.go  # Entity Test
-└── test
+└── testdata
     └── exchange_mock.go           # Mock if needed
 ```
 
 ### Entity
 
-Please write test in the same directory as where the entity located.
+Please write tests in the same directory as where the entity located.
 
 ```zsh
 .
 └── internal
     └── app
         └── domain
-            ├── parameter.go         # Target Entity
-            └── parameter_test.go    # Test
+            ├── parameter.go      # Target Entity
+            └── parameter_test.go # Test
 ```
 
 ```go
@@ -464,7 +492,7 @@ func TestParameter(t *testing.T) {
 
 ### Usecase
 
-Please prepare mock on `test` package (if needed) and write test in the same directory as the usecase.
+Please prepare mock on `testdata` package (if needed) and write tests in the same directory as the usecase.
 
 ```zsh
 .
@@ -476,13 +504,13 @@ Please prepare mock on `test` package (if needed) and write test in the same dir
 │           └── usecase
 │               ├── ticker.go      # Target Usecase
 │               └── ticker_test.go # Test
-└── test
+└── testdata
     └── exchange_mock.go           # Mock of Application Service Interface
 ```
 
 ```go
 // exchange_mock.go
-package test
+package testdata
 
 import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
@@ -525,7 +553,7 @@ import (
 
 	"github.com/resotto/goilerplate/internal/app/application/usecase"
 	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
-	"github.com/resotto/goilerplate/test"
+	"github.com/resotto/goilerplate/testdata"
 )
 
 func TestTicker(t *testing.T) {
@@ -547,7 +575,7 @@ func TestTicker(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			mexchange := testdata.MExchange{}                                           // Using Mock
+			mexchange := testdata.MExchange{} // using Mock
 			result := usecase.Ticker(mexchange, tt.pair)
 			if result.Sell != tt.expectedsell {
 				t.Errorf("got %q, want %q", result.Sell, tt.expectedsell)
@@ -605,7 +633,7 @@ func TestTicker(t *testing.T) {
 
 ## With PostgreSQL
 
-First, you pull docker image from GitHub Container Registry and run container with following command:
+First, you pull the docker image `ghcr.io/resotto/goilerplate-pg` from GitHub Container Registry and run container with following command:
 
 ```zsh
 docker run -d -it --name pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres ghcr.io/resotto/goilerplate-pg:latest
@@ -620,7 +648,7 @@ open http://0.0.0.0:8080/order
 
 ### Building Image
 
-If you fail pulling image from GitHub Container Registry, you also can build image from Dockerfile.
+If you fail pulling image from GitHub Container Registry, you also can build Docker image from Dockerfile.
 
 ```zsh
 cd build
@@ -630,7 +658,7 @@ docker run -d -it --name pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres goilerpla
 
 ### Docker Image
 
-The image you pulled from GitHub Container Registry is built from simple Dockerfile and init.sql.
+The image you pulled from GitHub Container Registry is built from the simple Dockerfile and init.sql.
 
 ```Dockerfile
 FROM postgres
@@ -692,3 +720,11 @@ insert into payments values ('722b694c-984c-4208-bddd-796553cf83e1', '3224ebc0-0
 ## License
 
 [GNU General Public License v3.0](https://github.com/resotto/goilerplate/blob/master/LICENSE).
+
+## Author
+
+Resotto
+
+<a href="https://github.com/resotto"><img src="https://user-images.githubusercontent.com/19743841/97778118-4629a980-1bb8-11eb-97ed-76dcdbe50406.png" /></a>
+<a href="https://twitter.com/resotto3"><img src="https://user-images.githubusercontent.com/19743841/97777698-52f8ce00-1bb5-11eb-93c9-b06e0c48b693.png" /></a>
+<a href="https://github.com/sponsors/resotto"><img src="https://img.shields.io/badge/Sponsor-ffffff?logo=github&logoColor=pink&style=flat-square" /></a>

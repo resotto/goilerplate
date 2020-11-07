@@ -1,4 +1,4 @@
-package test
+package testdata
 
 import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
 
