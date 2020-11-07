@@ -19,7 +19,7 @@ jobs:
       - name: Clone Goilerplate
         uses: actions/checkout@v2
         with:
-          repository: {{ github.repository }}
+          repository: resotto/goilerplate
       - name: Run Gochk
         run: |
           /go/bin/gochk -c=/go/src/github.com/resotto/gochk/configs/config.json
