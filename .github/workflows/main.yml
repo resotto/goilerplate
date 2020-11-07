@@ -37,5 +37,8 @@ jobs:
       - name: Run go test
         run: |
           go get -u gorm.io/gorm
-          go get -u github.com/resotto/goilerplate || echo 'no Go files in /home/runner/go/src/github.com/resotto/goilerplate'
+          go get -u github.com/gin-gonic/gin
+          go get -u github.com/google/uuid
+          go get -u github.com/spf13/viper
+          go get -u gorm.io/driver/postgres
           go test ./internal/app/...
