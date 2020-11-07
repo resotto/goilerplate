@@ -1,0 +1,33 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**/*.md"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  gochk-goilerplate:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://ghcr.io/resotto/gochk:latest
+    steps:
+      - name: Clone Goilerplate
+        uses: actions/checkout@v2
+        with:
+          repository: { { github.repository } }
+      - name: Run Gochk
+        run: |
+          /go/bin/gochk -c=/go/src/github.com/resotto/gochk/configs/config.json
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Run go test
+        run: |
+          go test ./internal/app/...
