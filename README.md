@@ -1,6 +1,7 @@
 <h1 align="center">Goilerplate</h1>
 
 <p align="center">
+  <a href="https://github.com/resotto/goilerplate/actions"><img src="https://github.com/resotto/goilerplate/workflows/test/badge.svg" /></a>
   <a href="https://goreportcard.com/report/github.com/resotto/goilerplate"><img src="https://goreportcard.com/badge/github.com/resotto/goilerplate" /></a>
   <a href="https://pkg.go.dev/github.com/resotto/goilerplate"><img src="https://pkg.go.dev/badge/github.com/resotto/goilerplate" /></a>
   <a href="https://github.com/resotto/goilerplate/issues/1"><img src="https://img.shields.io/badge/chat-on%20issue-yellow"></a>
