@@ -11,7 +11,12 @@ on:
       - master
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2
   gochk-goilerplate:
+    needs: setup
     runs-on: ubuntu-latest
     container:
       image: docker://ghcr.io/resotto/gochk:latest
@@ -24,6 +29,7 @@ jobs:
         run: |
           /go/bin/gochk -c=/go/src/github.com/resotto/gochk/configs/config.json
   test:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
