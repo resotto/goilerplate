@@ -30,4 +30,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Run go test
         run: |
+          go get -u gorm.io/gorm
+          go get -u github.com/resotto/goilerplate
           go test ./internal/app/...
