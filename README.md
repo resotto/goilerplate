@@ -56,7 +56,6 @@ Note
 ## Getting Started
 
 ```zsh
-go get -u gorm.io/gorm                          # please go get gorm first
 go get -u github.com/resotto/goilerplate        # might take few minutes
 cd ${GOPATH}/src/github.com/resotto/goilerplate
 go run cmd/app/main.go                          # from root directory
@@ -636,7 +635,9 @@ func TestTicker(t *testing.T) {
 
 [Gochk, static dependency analysis tool for go files,](https://github.com/resotto/gochk) empowers Goilerplate so much!
 
-Let's include Gochk into CI process.
+**[Gochk](https://github.com/resotto/gochk) confirms that codebase follows [Clean Architecture The Dependency Rule](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html#the-dependency-rule).**
+
+Let's merge Gochk into CI process.
 
 ```yml
 name: test
