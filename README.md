@@ -47,6 +47,7 @@ Note
 - [Dependency Injection](#dependency-injection)
 - [Testing](#testing)
 - [Naming Convention](#naming-convention)
+- [With Gochk](#with-gochk)
 - [With PostgreSQL](#with-postgresql)
 - [Feedbacks](#feedbacks)
 - [License](#license)
@@ -630,6 +631,44 @@ func TestTicker(t *testing.T) {
 
 - For package layout, please check:
   - [Project Layout](https://github.com/golang-standards/project-layout)
+
+## With Gochk
+
+[Gochk, static dependency analysis tool for go files,](https://github.com/resotto/gochk) empowers Goilerplate so much!
+
+Let's include Gochk into CI process.
+
+```yml
+name: test
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "**/*.md"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  gochk-goilerplate:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://ghcr.io/resotto/gochk:latest
+    steps:
+      - name: Clone Goilerplate
+        uses: actions/checkout@v2
+        with:
+          repository: {{ github.repository }}
+      - name: Run Gochk
+        run: |
+          /go/bin/gochk -c=/go/src/github.com/resotto/gochk/configs/config.json
+```
+
+And then, [its result is](https://github.com/resotto/goilerplate/runs/1367461573):
+
+![Gochk Result in GitHub Actions](https://user-images.githubusercontent.com/19743841/98438959-6f56b680-2131-11eb-8b6e-d835e56239e0.png)
 
 ## With PostgreSQL
 
